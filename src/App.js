@@ -1,24 +1,126 @@
-import logo from './logo.svg';
-import './App.css';
+import Dashboard from "./pages/Dashboard";
+import { useEffect, useState } from "react";
+import { ImCross } from "react-icons/im";
+import "./App.css";
+import {toast} from 'react-toastify'
 
 function App() {
+  const [showModal, setShowModal] = useState(false);
+  const [makeBoard, setMakeBoard] = useState({
+    color: "",
+    title: "",
+  });
+  const [myBoards, setMyBoards] = useState(() => {
+    const localData = localStorage.getItem('boards');
+    return localData ? JSON.parse(localData) : [];
+  });
+  const [selectedColor, setSelectedColor] = useState(null);
+
+  const colors = ["#FA8072", "#87CEEB", "#98FB98", "#E6E6FA"];
+
+  const handleInputChange = (e) => {
+    setMakeBoard({
+      ...makeBoard,
+      title: e.target.value,
+    });
+  };
+
+  const handleColorClick = (color) => {
+    setMakeBoard({
+      ...makeBoard,
+      color,
+    });
+    setSelectedColor(color);
+  };
+
+  const handleCreateBoard = () => {
+    // Use makeBoard here to create the board
+    // Reset the state afterwards
+    // we can use push method also over here
+    const newBoards = [...myBoards, makeBoard];
+    setMyBoards(newBoards);
+    localStorage.setItem('boards', JSON.stringify(newBoards));
+    setMakeBoard({
+      color: "",
+      title: "",
+    });
+    toast.success("Added a board succesfully")
+    setShowModal(false)
+    setSelectedColor(null);
+  };
+
+  useEffect(() => {
+    const localData = localStorage.getItem('boards');
+    if(localData) {
+      setMyBoards(JSON.parse(localData));
+    }
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <>
+      <div
+        className={`w-screen h-screen ${
+          showModal ? "blur-md" : "blur-0"
+        } relative flex flex-col`}
+      >
+        <Dashboard showModal={showModal} setMyBoards={setMyBoards} setShowModal={setShowModal} myBoards={myBoards}/>
+      </div>
+
+      {showModal && (
+        <div
+          className={`w-[600px] flex flex-col gap-5 top-[200px] left-[500px] absolute h-[400px] bg-white rounded-[8px] p-10 shadow `}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          <div className="flex flex-row justify-between items-center">
+            <h1 className="text-[24px] font-bold ">
+              Add a Name for your Board
+            </h1>
+            <div
+              className="mr-2 cursor-pointer"
+              onClick={() => setShowModal(!showModal)}
+            >
+              <ImCross />
+            </div>
+          </div>
+          <div className="">
+            <input
+              type="text"
+              className="w-full outline-none p-[10px] text-gray-500 border-[1px] border-gray-200"
+              placeholder="Enter the title of your board"
+              onChange={handleInputChange}
+              value={makeBoard.title}
+            />
+          </div>
+          <div className="mt-10 flex flex-col gap-[0.5rem]">
+            <div className="flex flex-col gap-[0.2rem]">
+              <h1 className="text-[22px] font-bold">Select Post Colour</h1>
+              <h5 className="text-[14px] font-light">
+                Here are some templates to help you get started
+              </h5>
+            </div>
+            <div className="flex flex-row gap-[1rem]">
+              {colors.map((color, index) => (
+                <div
+                  key={index}
+                  className={`w-[24px] h-[24px] rounded-[50%] ${
+                    color === selectedColor
+                      ? "border-2 border-black"
+                      : "border-[1px] border-gray-200"
+                  }`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => handleColorClick(color)}
+                ></div>
+              ))}
+            </div>
+          </div>
+          <button
+            className="self-end bg-[#D33852] text-white items-center px-[16px] py-[13px] gap-[8px] font-semibold rounded-[8px]"
+            onClick={handleCreateBoard}
+          >
+            Create Board
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
