@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ImCross } from "react-icons/im";
 import "./App.css";
 import {toast} from 'react-toastify'
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
@@ -37,7 +38,8 @@ function App() {
     // Use makeBoard here to create the board
     // Reset the state afterwards
     // we can use push method also over here
-    const newBoards = [...myBoards, makeBoard];
+    const newBoard = { ...makeBoard, id: uuidv4() };  
+    const newBoards = [...myBoards, newBoard];
     setMyBoards(newBoards);
     localStorage.setItem('boards', JSON.stringify(newBoards));
     setMakeBoard({

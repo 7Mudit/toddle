@@ -3,13 +3,23 @@ import "./Dashboard.css";
 import Board from "../components/Board";
 import { AiOutlinePlus } from "react-icons/ai";
 import { CiSearch } from "react-icons/ci";
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 // Light Coral: #FA8072
 // Sky Blue: #87CEEB
 // Pale Green: #98FB98
 // Lavender: #E6E6FA
 
-const Dashboard = ({ showModal, setShowModal, myBoards }) => {
+const Dashboard = ({ showModal, setShowModal, myBoards,setMyBoards }) => {
+  console.log(myBoards)
+  const handleOnDragEnd = (result) => {
+    if (!result.destination) return;
+    const items = Array.from(myBoards);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setMyBoards(items);
+  };
   return (
     <>
       {/* navbar */}
@@ -45,20 +55,31 @@ const Dashboard = ({ showModal, setShowModal, myBoards }) => {
       {/* My boards section */}
       <div className="flex flex-col p-10 ">
         <h1 className="font-bold text-[32px]  leading-[44px] ">My Boards</h1>
-        <div className="grid grid-cols-3 gap-7 mt-10">
-          {myBoards.length > 0 ? (
-            myBoards.map((board, index) => (
-              <div key={index}>
-                <Board board={board} />
+        <DragDropContext onDragEnd={handleOnDragEnd}>
+      <Droppable droppableId="boards">
+        {(provided) => (
+          <div className="grid grid-cols-3 gap-7 mt-10" {...provided.droppableProps} ref={provided.innerRef}>
+            { myBoards && myBoards.length > 0 ? (
+              myBoards.map((board, index) => (
+                <Draggable key={board.id} draggableId={board.id} index={index}>
+                  {(provided) => (
+                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                      <Board board={board} />
+                    </div>
+                  )}
+                </Draggable>
+              ))
+            ) : (
+              <div className="text-[24px] text-gray-500">
+                {" "}
+                No boards found !! Please add one ....
               </div>
-            ))
-          ) : (
-            <div className="text-[24px] text-gray-500">
-              {" "}
-              No boards found !! Please add one ....
-            </div>
-          )}
-        </div>
+            )}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
       </div>
     </>
   );
